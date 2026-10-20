@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Руководство Shadowrocket</title>
+
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/main/img/Shadowrocket.png" />
+  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/main/img/ShadowTrans.PNG" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
+  <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 500: '#0ea5e9', 600: '#0284c7' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Общий сброс стилей и предотвращение горизонтальной прокрутки */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      color-scheme: light;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+      overflow-x: hidden;
+      width: 100%;
+      max-width: 100vw;
+    }
+    html.dark { color-scheme: dark; }
+
+    body {
+      margin: 0;
+      width: 100%;
+      max-width: 100vw;
+      overflow-x: hidden;
+      position: relative;
+      overscroll-behavior-y: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .app-shell {
+      height: 100dvh;
+      min-height: 100dvh;
+      width: 100%;
+      max-width: 100vw;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #content-container {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+      overscroll-behavior-x: none;
+    }
+
+    #toc-tree {
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Базовая типографика содержимого и ограничение переполнения */
+    .markdown-body {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+    }
+
+    .markdown-body h1 { font-size: 1.75rem; font-weight: 700; margin-top: 1.75rem; margin-bottom: 0.85rem; padding-bottom: 0.4rem; border-bottom: 1px solid #e2e8f0; scroll-margin-top: 1.5rem; overflow-wrap: anywhere; }
+    .markdown-body h2 { font-size: 1.35rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.65rem; padding-bottom: 0.3rem; border-bottom: 1px solid #f1f5f9; scroll-margin-top: 1.5rem; overflow-wrap: anywhere; }
+    .markdown-body h3 { font-size: 1.1rem; font-weight: 600; margin-top: 1.25rem; margin-bottom: 0.45rem; scroll-margin-top: 1.5rem; overflow-wrap: anywhere; }
+    .dark .markdown-body h1, .dark .markdown-body h2 { border-color: #334155; }
+
+    .markdown-body p,
+    .markdown-body li,
+    .markdown-body blockquote {
+      margin-bottom: 0.85rem;
+      line-height: 1.75;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .markdown-body ul, .markdown-body ol { margin-left: 1.25rem; margin-bottom: 1rem; list-style-type: disc; }
+    .markdown-body ol { list-style-type: decimal; }
+    .markdown-body li { margin-bottom: 0.35rem; }
+
+    /* Код в строке: разрешаем перенос в любом месте, чтобы исключить выход за пределы экрана (основное исправление) */
+    .markdown-body code:not(pre code) {
+      background-color: rgba(148, 163, 184, 0.18);
+      padding: 0.15rem 0.35rem;
+      border-radius: 4px;
+      font-size: 0.85em;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      white-space: pre-wrap;
+      word-break: break-all;
+      overflow-wrap: anywhere;
+    }
+
+    /* Блоки кода: ограничиваем горизонтальную прокрутку контейнером */
+    .markdown-body pre {
+      position: relative;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      padding: 1rem;
+      border-radius: 0.6rem;
+      margin-bottom: 1.25rem;
+      overflow-x: auto;
+      background: #0f172a;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-x pan-y;
+    }
+
+    .markdown-body pre code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      white-space: pre;
+      word-break: normal;
+    }
+
+    /* Таблицы: разрешаем прокрутку внутри собственной области */
+    .markdown-body table {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+      border-collapse: collapse;
+      margin-bottom: 1.25rem;
+      font-size: 0.9rem;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-x pan-y;
+    }
+    .markdown-body th, .markdown-body td { border: 1px solid #e2e8f0; padding: 0.5rem 0.75rem; text-align: left; }
+    .dark .markdown-body th, .dark .markdown-body td { border-color: #334155; }
+    .markdown-body th { background-color: #f8fafc; font-weight: 600; }
+    .dark .markdown-body th { background-color: #1e293b; }
+
+    .markdown-body blockquote:not(.callout-box) { border-left: 4px solid #94a3b8; padding-left: 0.85rem; margin: 1rem 0; color: #64748b; }
+    .dark .markdown-body blockquote:not(.callout-box) { color: #94a3b8; }
+
+    .markdown-body a { color: #0284c7; text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere; word-break: break-all; }
+    .dark .markdown-body a { color: #38bdf8; }
+
+    .markdown-body img { max-width: 100%; height: auto; display: block; }
+
+    /* Семантические карточки Callout */
+    .callout-box { margin: 1.25rem 0; padding: 0.85rem 1rem; border-radius: 0.5rem; border-left-width: 4px; font-size: 0.9rem; line-height: 1.65; max-width: 100%; overflow-wrap: anywhere; }
+    .callout-box .callout-header { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; margin-bottom: 0.4rem; }
+    .callout-box .callout-content p:last-child { margin-bottom: 0; }
+
+    .callout-tip { background-color: #f0fdf4; border-color: #22c55e; color: #166534; }
+    .dark .callout-tip { background-color: rgba(34, 197, 94, 0.1); border-color: #22c55e; color: #86efac; }
+    .callout-note { background-color: #f0f9ff; border-color: #0284c7; color: #075985; }
+    .dark .callout-note { background-color: rgba(14, 165, 233, 0.1); border-color: #38bdf8; color: #7dd3fc; }
+    .callout-warning { background-color: #fffbeb; border-color: #f59e0b; color: #92400e; }
+    .dark .callout-warning { background-color: rgba(245, 158, 11, 0.1); border-color: #f59e0b; color: #fde68a; }
+    .callout-caution { background-color: #fef2f2; border-color: #ef4444; color: #991b1b; }
+    .dark .callout-caution { background-color: rgba(239, 68, 68, 0.1); border-color: #ef4444; color: #fca5a5; }
+    .callout-important { background-color: #faf5ff; border-color: #a855f7; color: #6b21a8; }
+    .dark .callout-important { background-color: rgba(168, 85, 247, 0.1); border-color: #c084fc; color: #e9d5ff; }
+
+    /* Подсветка совпадений поиска */
+    mark.search-highlight {
+      background-color: rgba(253, 224, 71, 0.45);
+      color: inherit;
+      padding: 0.1em 0.25em;
+      border-radius: 3px;
+    }
+    .dark mark.search-highlight {
+      background-color: rgba(234, 179, 8, 0.35);
+      color: #fef08a;
+    }
+
+    @keyframes pulse-focus {
+      0% { background-color: rgba(14, 165, 233, 0.25); border-radius: 6px; }
+      100% { background-color: transparent; }
+    }
+    .target-highlight {
+      animation: pulse-focus 2.2s cubic-bezier(0, 0, 0.2, 1);
+    }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Блокировка фоновой прокрутки при открытом диалоге */
+    body.search-open {
+      overflow: hidden;
+    }
+
+    #search-modal {
+      padding-top: max(2.5rem, env(safe-area-inset-top));
+      padding-bottom: max(1rem, env(safe-area-inset-bottom));
+      padding-left: max(0.75rem, env(safe-area-inset-left));
+      padding-right: max(0.75rem, env(safe-area-inset-right));
+    }
+
+    #search-modal > div {
+      max-height: min(80dvh, 720px);
+    }
+
+    .search-item {
+      touch-action: manipulation;
+    }
+
+    /* Оптимизация скрытой боковой панели на узких экранах: предотвращаем вычисление лишней ширины в iOS Safari */
+    @media (max-width: 767px) {
+      #sidebar.-translate-x-full {
+        visibility: hidden;
+        pointer-events: none;
+      }
+      #content-container {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        padding-top: 0.75rem;
+        padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+      }
+      #doc-content {
+        padding-left: 0.85rem !important;
+        padding-right: 0.85rem !important;
+        padding-top: 1rem !important;
+        padding-bottom: 1.5rem !important;
+        border-radius: 0.5rem !important;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-200">
+  <div class="app-shell flex overflow-hidden relative">
+
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-30 hidden md:hidden transition-opacity"></div>
+
+    <aside id="sidebar" class="w-80 max-w-[85vw] flex-shrink-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-40 fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-200 ease-in-out">
+      <div class="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <a href="https://lowertop.github.io/Shadowrocket/" class="flex items-center space-x-2.5 min-w-0 hover:text-sky-500 dark:hover:text-sky-400 transition-colors" title="Открыть главную страницу Shadowrocket">
+          <img src="https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/main/img/Shadowrocket.png" alt="Logo" class="w-6 h-6 rounded-md shadow-sm flex-shrink-0" />
+          <span class="font-semibold text-lg tracking-tight truncate">Shadowrocket</span>
+        </a>
+        <div class="flex items-center space-x-1 flex-shrink-0">
+          <a href="https://github.com/LOWERTOP/Shadowrocket" target="_blank" rel="noopener noreferrer" class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none transition-colors" title="Открыть репозиторий GitHub">
+            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"></path>
+            </svg>
+          </a>
+          <button id="theme-toggle" class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none transition-colors" title="Переключить тему">
+            <i data-lucide="moon" id="theme-icon" class="w-4 h-4"></i>
+          </button>
+          <button id="close-sidebar-btn" class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none transition-colors md:hidden ml-1" title="Закрыть содержание">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="p-3 border-b border-slate-200 dark:border-slate-800">
+        <button id="open-search-modal" class="w-full flex items-center justify-between px-3 py-2 text-sm bg-slate-100 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg transition border border-transparent hover:border-slate-300 dark:hover:border-slate-700">
+          <span class="flex items-center gap-2">
+            <i data-lucide="search" class="w-4 h-4"></i>
+            <span>Поиск по всему руководству...</span>
+          </span>
+          <div class="hidden md:flex items-center gap-1 font-mono text-[10px]">
+            <kbd class="bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded">⌘K</kbd>
+            <span class="text-slate-400">/</span>
+            <kbd class="bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 px-1.5 py-0.5 rounded">/</kbd>
+          </div>
+        </button>
+      </div>
+
+      <nav id="toc-tree" class="flex-1 overflow-y-auto p-4 space-y-1 text-sm no-scrollbar">
+        <div class="text-xs text-slate-400 py-2">Подготовка содержания...</div>
+      </nav>
+
+      <div class="p-3 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-400 flex justify-between items-center">
+        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Актуальная документация</span>
+        <a href="https://github.com/LOWERTOP/Shadowrocket" target="_blank" rel="noopener noreferrer" class="hover:text-sky-500 transition-colors flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"></path>
+          </svg>
+          <span>GitHub</span>
+        </a>
+      </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col min-w-0 w-full overflow-hidden bg-white dark:bg-slate-900 md:bg-slate-50 md:dark:bg-slate-950">
+      <div class="md:hidden flex items-center justify-between p-3 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 min-w-0">
+        <button id="menu-btn" class="p-1 rounded text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800" title="Открыть содержание">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+        <span class="font-medium text-sm truncate px-2 flex-1 text-center">Руководство Shadowrocket</span>
+
+        <div class="flex items-center space-x-1 flex-shrink-0">
+          <button id="open-search-modal-mobile" class="p-1.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md" title="Поиск по документации">
+            <i data-lucide="search" class="w-5 h-5"></i>
+          </button>
+          <a href="https://github.com/LOWERTOP/Shadowrocket" target="_blank" rel="noopener noreferrer" class="p-1.5 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition-colors" title="Открыть репозиторий GitHub">
+            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <div id="content-container" class="flex-1 p-2 sm:p-4 md:p-10 lg:px-16 scroll-smooth">
+        <article id="doc-content" class="markdown-body max-w-4xl mx-auto bg-white dark:bg-slate-900 p-4 sm:p-6 md:p-10 rounded-xl md:shadow-sm md:border md:border-slate-200 md:dark:border-slate-800">
+          <div id="loading-state" class="flex items-center justify-center py-24 text-slate-400">
+            <i data-lucide="loader-2" class="w-6 h-6 animate-spin mr-2"></i>
+            <span>Загрузка актуального README.md...</span>
+          </div>
+        </article>
+      </div>
+    </main>
+  </div>
+
+  <!-- Кнопка возврата наверх -->
+<button id="back-to-top" class="fixed bottom-6 right-6 md:bottom-10 md:right-10 p-2.5 rounded-full bg-sky-500 text-white shadow-lg shadow-sky-500/30 opacity-0 pointer-events-none transform translate-y-4 transition-all duration-300 z-40 hover:bg-sky-600 focus:outline-none dark:bg-sky-600 dark:hover:bg-sky-500" title="Наверх">
+  <i data-lucide="arrow-up" class="w-5 h-5"></i>
+</button>
+
+  <div id="search-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-start justify-center p-3 pt-12 md:pt-20">
+    <div class="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden transform transition-all max-h-[80vh]">
+      <div class="p-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center gap-3">
+        <i data-lucide="search" class="w-5 h-5 text-slate-400 flex-shrink-0"></i>
+        <input id="global-search-input" type="text" placeholder="Введите ключевые слова для поиска по всему тексту..." class="flex-1 min-w-0 bg-transparent text-slate-900 dark:text-slate-100 text-base outline-none outline-none placeholder-slate-400">
+        <button id="close-search-btn" class="text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 px-2 py-1 rounded text-slate-500 transition">ESC</button>
+      </div>
+      <div id="search-results" class="flex-1 overflow-y-auto p-3 space-y-2 no-scrollbar text-sm">
+        <div class="text-center py-12 text-slate-400">
+          <i data-lucide="file-text" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
+          <p>Введите ключевые слова для поиска в разделах, абзацах, параметрах конфигурации и блоках кода</p>
+        </div>
+      </div>
+      <div class="px-4 py-2 bg-slate-50 dark:bg-slate-950/60 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+        <span>Полнотекстовый индекс абзацев готов</span>
+        <span>Нажмите для перехода к фрагменту</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const $ = (id) => document.getElementById(id);
+      const html = document.documentElement;
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+      /* ---------- Управление темой ---------- */
+      const themeToggleBtn = $('theme-toggle');
+      const themeIcon = $('theme-icon');
+
+      function applyTheme(dark, persist = true) {
+        html.classList.toggle('dark', dark);
+        if (persist) localStorage.setItem('theme', dark ? 'dark' : 'light');
+
+        if (themeIcon) {
+          themeIcon.setAttribute('data-lucide', dark ? 'sun' : 'moon');
+          if (window.lucide) lucide.createIcons({ attrs: { 'aria-hidden': 'true' } });
+        }
+      }
+
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      applyTheme(savedTheme ? savedTheme === 'dark' : prefersDark, false);
+
+      themeToggleBtn?.addEventListener('click', () => {
+        applyTheme(!html.classList.contains('dark'));
+      });
+
+      /* ---------- Переключение боковой панели на мобильных устройствах ---------- */
+      const menuBtn = $('menu-btn');
+      const sidebar = $('sidebar');
+      const closeSidebarBtn = $('close-sidebar-btn');
+      const sidebarBackdrop = $('sidebar-backdrop');
+
+      function openSidebar() {
+        sidebar?.classList.remove('-translate-x-full', 'invisible');
+        sidebarBackdrop?.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+      }
+
+      function closeSidebar() {
+        sidebar?.classList.add('-translate-x-full');
+        sidebarBackdrop?.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+        setTimeout(() => {
+          if (sidebar?.classList.contains('-translate-x-full')) {
+            sidebar.classList.add('invisible');
+          }
+        }, 200);
+      }
+
+      menuBtn?.addEventListener('click', openSidebar);
+      closeSidebarBtn?.addEventListener('click', closeSidebar);
+      sidebarBackdrop?.addEventListener('click', closeSidebar);
+
+      /* ---------- Настройка Markdown ---------- */
+      marked.setOptions({
+        gfm: true,
+        breaks: false,
+        headerIds: false,
+        mangle: false
+      });
+
+      function highlightCodeBlocks(root) {
+        root.querySelectorAll('pre code').forEach(code => {
+          try {
+            if (window.hljs) hljs.highlightElement(code);
+          } catch (err) {
+            console.warn('Ошибка подсветки кода:', err);
+          }
+        });
+      }
+
+      function escapeHtml(value = '') {
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function preprocessMarkdown(md) {
+        if (!md) return '';
+
+        let cleaned = String(md).replace(/\r\n?/g, '\n');
+
+        cleaned = cleaned.replace(
+          /^(#{1,6}\s+)(.*?)$/gm,
+          (match, hashes, titleContent) => {
+            const textOnly = titleContent.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+            return hashes + textOnly;
+          }
+        );
+
+        const lines = cleaned.split('\n');
+        const titleIndex = lines.findIndex(line =>
+          /^#{1,6}\s+.*Руководство\s+Shadowrocket/i.test(line.trim())
+        );
+        if (titleIndex >= 0) {
+          cleaned = lines.slice(titleIndex).join('\n');
+        }
+
+        cleaned = cleaned.replace(
+          /(?:^|\n)#{1,6}\s*(?:Содержание|Table of Contents)\s*\n[\s\S]*?(?=\n#{1,6}\s+|$)/i,
+          '\n'
+        );
+
+        const calloutConfig = {
+          TIP:       { label: 'Совет', icon: 'lightbulb', className: 'callout-tip' },
+          NOTE:      { label: 'Примечание', icon: 'info', className: 'callout-note' },
+          WARNING:   { label: 'Предупреждение', icon: 'alert-triangle', className: 'callout-warning' },
+          CAUTION:   { label: 'Осторожно', icon: 'alert-octagon', className: 'callout-caution' },
+          IMPORTANT: { label: 'Важно', icon: 'alert-circle', className: 'callout-important' }
+        };
+
+        cleaned = cleaned.replace(
+          /(?:^|\n)(> *\[!(TIP|NOTE|WARNING|CAUTION|IMPORTANT)\][\s\S]*?)(?=\n\n(?![> ])|\n(?=[^> ])|$)/gi,
+          (match, block, type) => {
+            const conf = calloutConfig[type.toUpperCase()] || calloutConfig.NOTE;
+            const contentLines = block.trim().split('\n');
+            const content = contentLines.slice(1)
+              .map(line => line.replace(/^>\s?/, ''))
+              .join('\n')
+              .trim();
+
+            const innerHtml = marked.parse(content);
+
+            return `
+<div class="callout-box ${conf.className}">
+  <div class="callout-header">
+    <i data-lucide="${conf.icon}" class="w-4 h-4" aria-hidden="true"></i>
+    <span>${conf.label}</span>
+  </div>
+  <div class="callout-content">${innerHtml}</div>
+</div>
+`;
+          }
+        );
+
+        return cleaned.trim();
+      }
+
+      function slugify(text) {
+        return String(text || '')
+          .trim()
+          .toLowerCase()
+          .replace(/[^\p{L}\p{N}\p{M}\s\-_]/gu, '')
+          .replace(/\s/g, '-');
+      }
+
+      function makeUniqueId(base, used) {
+        const safeBase = slugify(base) || 'section';
+        let id = safeBase;
+        let n = 2;
+        while (used.has(id) || $(id)) id = `${safeBase}-${n++}`;
+        used.add(id);
+        return id;
+      }
+
+      /* ---------- Модуль полнотекстового поиска ---------- */
+      let searchIndex = [];
+
+      function buildSearchIndex() {
+        searchIndex = [];
+        const docContent = $('doc-content');
+        if (!docContent) return;
+
+        let currentSection = 'Обзор';
+        let currentSectionId = '';
+
+        Array.from(docContent.children).forEach((el, index) => {
+          const tag = el.tagName.toLowerCase();
+
+          if (['h1', 'h2', 'h3'].includes(tag)) {
+            currentSection = el.innerText.trim();
+            currentSectionId = el.id;
+            if (currentSection) {
+              searchIndex.push({
+                type: 'heading',
+                section: currentSection,
+                elementId: currentSectionId,
+                text: currentSection,
+                rawElement: el
+              });
+            }
+            return;
+          }
+
+          const text = (el.innerText || '').replace(/\s+/g, ' ').trim();
+          if (text.length > 2) {
+            if (!el.id) el.id = `block-${index}`;
+
+            searchIndex.push({
+              type: 'content',
+              section: currentSection,
+              sectionId: currentSectionId,
+              elementId: el.id,
+              text,
+              rawElement: el
+            });
+          }
+        });
+      }
+
+      /* ---------- Создание содержания и копирование кода ---------- */
+      function buildTOCAndCodeActions() {
+        const docContent = $('doc-content');
+        const tocTree = $('toc-tree');
+        if (!docContent || !tocTree) return;
+
+        tocTree.replaceChildren();
+        const usedIds = new Set();
+
+        Array.from(docContent.querySelectorAll('h1, h2, h3')).forEach((heading, idx) => {
+          const text = heading.innerText.trim();
+          if (text === 'Содержание' || text.toLowerCase() === 'table of contents') {
+            heading.remove();
+            return;
+          }
+
+          const id = makeUniqueId(text || `section-${idx}`, usedIds);
+          heading.id = id;
+          heading.dataset.rawTitle = text;
+
+          const link = document.createElement('a');
+          link.href = `#${encodeURIComponent(id)}`;
+          link.className =
+            'block py-1.5 px-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 ' +
+            'transition-colors truncate ' +
+            (heading.tagName === 'H1'
+              ? 'font-semibold text-slate-800 dark:text-slate-200'
+              : heading.tagName === 'H2'
+                ? 'ml-3 text-slate-600 dark:text-slate-400'
+                : 'ml-6 text-xs text-slate-500 dark:text-slate-500');
+
+          link.textContent = text;
+          link.addEventListener('click', e => {
+            e.preventDefault();
+            scrollToElement(heading, true);
+            if (window.innerWidth < 768) closeSidebar();
+          });
+
+          tocTree.appendChild(link);
+        });
+
+        buildSearchIndex();
+
+        docContent.querySelectorAll('pre').forEach(pre => {
+          if (pre.querySelector('.code-copy-btn')) return;
+
+          const copyBtn = document.createElement('button');
+          copyBtn.type = 'button';
+          copyBtn.className =
+            'code-copy-btn absolute top-2.5 right-2.5 text-xs bg-slate-800 ' +
+            'hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded transition ' +
+            'border border-slate-700 select-none';
+          copyBtn.textContent = 'Копировать';
+          copyBtn.setAttribute('aria-label', 'Копировать код');
+
+          copyBtn.addEventListener('click', async () => {
+            const code = pre.querySelector('code')?.innerText || '';
+            try {
+              await navigator.clipboard.writeText(code);
+              copyBtn.textContent = 'Скопировано';
+            } catch {
+              const ta = document.createElement('textarea');
+              ta.value = code;
+              ta.style.position = 'fixed';
+              ta.style.opacity = '0';
+              document.body.appendChild(ta);
+              ta.select();
+              try {
+                document.execCommand('copy');
+                copyBtn.textContent = 'Скопировано';
+              } catch {
+                copyBtn.textContent = 'Не удалось скопировать';
+              }
+              ta.remove();
+            }
+            setTimeout(() => { copyBtn.textContent = 'Копировать'; }, 1800);
+          });
+
+          pre.appendChild(copyBtn);
+        });
+      }
+
+      /* ---------- Прокрутка к целевому элементу ---------- */
+      function scrollToElement(target, highlight = false) {
+        if (!target) return;
+
+        const container = $('content-container');
+        const reduced = prefersReducedMotion.matches;
+
+        if (container) {
+          const cRect = container.getBoundingClientRect();
+          const tRect = target.getBoundingClientRect();
+          const targetTop = container.scrollTop + (tRect.top - cRect.top) - 16;
+
+          container.scrollTo({
+            top: Math.max(0, targetTop),
+            behavior: reduced ? 'auto' : 'smooth'
+          });
+        } else {
+          target.scrollIntoView({
+            behavior: reduced ? 'auto' : 'smooth',
+            block: 'start'
+          });
+        }
+
+        if (highlight) {
+          target.classList.remove('target-highlight');
+          requestAnimationFrame(() => {
+            void target.offsetWidth;
+            target.classList.add('target-highlight');
+          });
+        }
+      }
+
+      /* ---------- Переход по внутренним якорям текста ---------- */
+      function setupInternalLinks() {
+        const container = $('content-container');
+        if (!container) return;
+
+        container.querySelectorAll('a[href^="#"]').forEach(link => {
+          if (link.dataset.internalBound === '1') return;
+          link.dataset.internalBound = '1';
+
+          link.addEventListener('click', e => {
+            const href = link.getAttribute('href');
+            if (!href || href === '#') return;
+
+            let key;
+            try {
+              key = decodeURIComponent(href.slice(1)).trim();
+            } catch {
+              key = href.slice(1).trim();
+            }
+
+            if (!key) return;
+
+            const target =
+              $(key) ||
+              $(slugify(key)) ||
+              Array.from(container.querySelectorAll('h1,h2,h3,h4,h5,h6'))
+                .find(h => h.innerText.trim() === key || h.dataset.rawTitle === key);
+
+            if (!target) return;
+
+            e.preventDefault();
+            scrollToElement(target, true);
+
+            try {
+              history.replaceState(null, '', `#${encodeURIComponent(target.id)}`);
+            } catch {}
+          });
+        });
+      }
+
+      /* ---------- Логика диалога поиска ---------- */
+      const searchModal = $('search-modal');
+      const globalSearchInput = $('global-search-input');
+      const searchResults = $('search-results');
+      const openSearchBtn = $('open-search-modal');
+      const openSearchBtnMobile = $('open-search-modal-mobile');
+      const closeSearchBtn = $('close-search-btn');
+
+      let previousFocus = null;
+
+      function emptySearchState() {
+        searchResults.innerHTML = `
+          <div class="text-center py-12 text-slate-400">
+            <i data-lucide="file-text" class="w-8 h-8 mx-auto mb-2 opacity-50" aria-hidden="true"></i>
+            <p>Введите ключевые слова для поиска в разделах, абзацах, параметрах конфигурации и блоках кода</p>
+          </div>
+        `;
+        lucide.createIcons();
+      }
+
+      function openSearch() {
+        if (!searchModal || !globalSearchInput) return;
+
+        previousFocus = document.activeElement;
+        searchModal.classList.remove('hidden');
+        document.body.classList.add('search-open');
+
+        globalSearchInput.value = '';
+        emptySearchState();
+
+        requestAnimationFrame(() => {
+          globalSearchInput.focus({ preventScroll: true });
+        });
+      }
+
+      function closeSearch() {
+        if (!searchModal) return;
+
+        searchModal.classList.add('hidden');
+        document.body.classList.remove('search-open');
+
+        if (previousFocus && typeof previousFocus.focus === 'function') {
+          try { previousFocus.focus({ preventScroll: true }); } catch {}
+        }
+        previousFocus = null;
+      }
+
+      openSearchBtn?.addEventListener('click', openSearch);
+      openSearchBtnMobile?.addEventListener('click', openSearch);
+      closeSearchBtn?.addEventListener('click', closeSearch);
+
+      searchModal?.addEventListener('click', e => {
+        if (e.target === searchModal) closeSearch();
+      });
+
+      function renderSearchResults(keyword) {
+        const key = keyword.toLowerCase();
+        const results = [];
+
+        searchIndex.forEach(item => {
+          const textLower = item.text.toLowerCase();
+          const index = textLower.indexOf(key);
+          if (index < 0) return;
+
+          const start = Math.max(0, index - 40);
+          const end = Math.min(item.text.length, index + keyword.length + 60);
+
+          let snippet = item.text.slice(start, end);
+          if (start > 0) snippet = '…' + snippet;
+          if (end < item.text.length) snippet += '…';
+
+          results.push({
+            ...item,
+            snippet,
+            isHeadingMatch: item.type === 'heading'
+          });
+        });
+
+        results.sort((a, b) => Number(b.isHeadingMatch) - Number(a.isHeadingMatch));
+
+        if (!results.length) {
+          searchResults.innerHTML = `
+            <div class="text-center py-12 text-slate-400">
+              <p class="font-medium">Не найдено содержимое с «${escapeHtml(keyword)}»</p>
+              <p class="text-xs mt-1">Попробуйте другое сокращение, название протокола или ключевое слово параметра</p>
+            </div>
+          `;
+          return;
+        }
+
+        const escapedKeyword = escapeHtml(keyword);
+        const regex = new RegExp(`(${escapedKeyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+
+        searchResults.innerHTML = results.map(res => {
+          const title = escapeHtml(res.section).replace(regex, '<mark class="search-highlight">$1</mark>');
+          const snippet = escapeHtml(res.snippet).replace(regex, '<mark class="search-highlight">$1</mark>');
+
+          return `
+            <button
+              type="button"
+              class="search-item w-full text-left p-3 rounded-lg hover:bg-slate-100
+                     dark:hover:bg-slate-800/70 cursor-pointer border border-transparent
+                     hover:border-slate-200 dark:hover:border-slate-700 transition"
+              data-target="${escapeHtml(res.elementId)}"
+            >
+              <span class="flex items-center gap-1.5 text-xs text-sky-600 dark:text-sky-400 font-medium mb-1">
+                <i data-lucide="${res.type === 'heading' ? 'hash' : 'align-left'}" class="w-3.5 h-3.5" aria-hidden="true"></i>
+                <span class="truncate">${title}</span>
+              </span>
+              <span class="block text-xs text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed font-mono">
+                ${snippet}
+              </span>
+            </button>
+          `;
+        }).join('');
+
+        lucide.createIcons();
+
+        searchResults.querySelectorAll('.search-item').forEach(item => {
+          item.addEventListener('click', () => {
+            const target = $(item.dataset.target);
+            if (!target) return;
+
+            closeSearch();
+            if (window.innerWidth < 768) closeSidebar();
+            scrollToElement(target, true);
+
+            try {
+              history.replaceState(null, '', `#${encodeURIComponent(target.id)}`);
+            } catch {}
+          });
+        });
+      }
+
+      let searchTimer = 0;
+      globalSearchInput?.addEventListener('input', e => {
+        const keyword = e.target.value.trim();
+        cancelAnimationFrame(searchTimer);
+        searchTimer = requestAnimationFrame(() => {
+          if (!keyword) emptySearchState();
+          else renderSearchResults(keyword);
+        });
+      });
+
+      /* ---------- Сочетания клавиш ---------- */
+      window.addEventListener('keydown', e => {
+        const active = document.activeElement;
+        const tag = active?.tagName?.toLowerCase() || '';
+        const inputActive = tag === 'input' || tag === 'textarea' || active?.isContentEditable;
+
+        if (e.key === '/' && !inputActive && searchModal?.classList.contains('hidden')) {
+          e.preventDefault();
+          openSearch();
+          return;
+        }
+
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+          e.preventDefault();
+          if (searchModal?.classList.contains('hidden')) openSearch();
+          else closeSearch();
+          return;
+        }
+
+        if (e.key === 'Escape') {
+          if (searchModal && !searchModal.classList.contains('hidden')) {
+            e.preventDefault();
+            closeSearch();
+          } else if (window.innerWidth < 768 && sidebar && !sidebar.classList.contains('-translate-x-full')) {
+            closeSidebar();
+          }
+        }
+      });
+
+      /* ---------- Загрузка и отображение документации ---------- */
+      const MD_URL = window.location.protocol === 'file:'
+        ? 'https://raw.githubusercontent.com/onikyannn/Shadowrocket/refs/heads/ru/README.md'
+        : './README.md';
+
+      async function loadManualDirectly() {
+        const docContent = $('doc-content');
+        if (!docContent) return;
+
+        try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 15000);
+
+          const res = await fetch(MD_URL, {
+            cache: 'no-cache',
+            signal: controller.signal,
+            headers: { 'Accept': 'text/plain, text/markdown, */*' }
+          });
+
+          clearTimeout(timeout);
+
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+          const mdText = await res.text();
+          if (!mdText.trim()) throw new Error('README не содержит текста');
+
+          const processed = preprocessMarkdown(mdText);
+          docContent.innerHTML = marked.parse(processed);
+
+          highlightCodeBlocks(docContent);
+          buildTOCAndCodeActions();
+          setupInternalLinks();
+
+          lucide.createIcons();
+
+          const hash = decodeURIComponent(location.hash.slice(1));
+          if (hash) {
+            const target = $(hash) || $(slugify(hash));
+            if (target) {
+              setTimeout(() => scrollToElement(target, false), 50);
+            }
+          }
+        } catch (err) {
+          console.error('Не удалось загрузить README:', err);
+
+          const message = err?.name === 'AbortError'
+            ? 'Время загрузки README.md истекло. Проверьте подключение к сети.'
+            : 'Проверьте подключение к сети или наличие файла README.md в той же локальной папке.';
+
+          docContent.innerHTML = `
+            <div class="text-center py-16 text-rose-500">
+              <i data-lucide="wifi-off" class="w-8 h-8 mx-auto mb-3 opacity-70" aria-hidden="true"></i>
+              <p class="font-semibold mb-2">Не удалось получить README.md</p>
+              <p class="text-sm text-slate-400">${escapeHtml(message)}</p>
+              <button id="retry-load" type="button"
+                class="mt-5 px-3 py-1.5 rounded-lg text-sm bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700">
+                Загрузить заново
+              </button>
+            </div>
+          `;
+          lucide.createIcons();
+          $('retry-load')?.addEventListener('click', loadManualDirectly);
+        }
+      }
+
+/* ---------- Логика возврата наверх ---------- */
+const backToTopBtn = $('back-to-top');
+const scrollContainer = $('content-container');
+
+if (scrollContainer && backToTopBtn) {
+  // Следим за прокруткой и показываем или скрываем кнопку
+  scrollContainer.addEventListener('scroll', () => {
+    if (scrollContainer.scrollTop > 500) {
+      backToTopBtn.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+      backToTopBtn.classList.add('opacity-100', 'translate-y-0');
+    } else {
+      backToTopBtn.classList.remove('opacity-100', 'translate-y-0');
+      backToTopBtn.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+    }
+  }, { passive: true });
+
+  // Плавно прокручиваем наверх по нажатию
+  backToTopBtn.addEventListener('click', () => {
+    const reduced = prefersReducedMotion.matches;
+    scrollContainer.scrollTo({
+      top: 0,
+      behavior: reduced ? 'auto' : 'smooth'
+    });
+  });
+}
+
+      /* ---------- Отслеживание изменений размера области просмотра ---------- */
+      function syncSidebarState() {
+        if (window.innerWidth < 768) {
+          sidebar?.classList.add('-translate-x-full', 'invisible');
+          sidebarBackdrop?.classList.add('hidden');
+          document.body.classList.remove('overflow-hidden');
+        } else {
+          sidebar?.classList.remove('-translate-x-full', 'invisible');
+          sidebarBackdrop?.classList.add('hidden');
+          document.body.classList.remove('overflow-hidden');
+        }
+      }
+
+      window.addEventListener('resize', syncSidebarState, { passive: true });
+
+      lucide.createIcons();
+      syncSidebarState();
+      loadManualDirectly();
+    })();
+  </script>
+</body>
+</html>
